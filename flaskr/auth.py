@@ -1,15 +1,17 @@
-import finctools
-from flask import (Blueprint, flash, g, redirect, render_template, request, session, url_for)
+import functools
+from flask import (
+    Blueprint, flash, g, redirect, render_template, request, session, url_for
+)
 from werkzeug.security import check_password_hash, generate_password_hash
 from flaskr.db import get_db
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-@bp.route('/register', methods=('GET'))
+@bp.route('/register', methods=['GET'])
 def register_get():
     return render_template('auth/register.html')
 
-@bp.route('/register', methods=('POST'))
+@bp.route('/register', methods=['POST'])
 def register_post():
     username = request.form['username']
     password = request.form['password']
@@ -23,24 +25,24 @@ def register_post():
 
     if error is None:
         try:
-            db:execute(
-                "INSERT INTO user (username, password) VALUES (?,?)",
+            db.execute(
+                "INSERT INTO user (username, password) VALUES (?, ?)",
                 (username, generate_password_hash(password)),
             )
             db.commit()
         except db.IntegrityError:
             error = f"User {username} is already registered."
         else:
-            return redirect(url_for("auth.login_get"))
+            return redirect(url_for("auth.login"))
 
     flash(error)
     return render_template('auth/register.html')
 
-@bp.route('login', methods=('GET'))
+@bp.route('/login', methods=['GET'])
 def login_get():
     return render_template('auth/login.html')
 
-@bp.route('login', methods=('POST'))
+@bp.route('/login', methods=['POST'])
 def login_post():
     username = request.form['username']
     password = request.form['password']
@@ -74,7 +76,7 @@ def load_logged_in_user():
             'SELECT * FROM user WHERE id = ?', (user_id,)
         ).fetchone()
 
-@bp.route('/logout')
+@bp.route('/logout', methods=['GET'])
 def logout():
     session.clear()
     return redirect(url_for('index'))
