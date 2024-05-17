@@ -31,7 +31,7 @@ def register_post():
         except db.IntegrityError:
             error = f"User {username} is already registered."
         else:
-            return redirect(url_for("auth.login"))
+            return redirect(url_for("auth.login_get"))
 
     flash(error)
     return render_template('auth/register.html')
@@ -78,3 +78,11 @@ def load_logged_in_user():
 def logout():
     session.clear()
     return redirect(url_for('index'))
+
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for('auth.login_get'))
+        return view(**kwargs)
+    return wrapped_view
